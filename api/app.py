@@ -12,43 +12,48 @@ users = {
 
 @app.route('/')
 def index():
-    if 'user_email' in session:
-        return redirect(url_for('dashboard'))
-    return render_template('index.html')
+    try:
+        if 'user_email' in session:
+            return redirect(url_for('dashboard'))
+        return render_template('index.html')
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
 @app.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-    
-    if not email or not password:
-        return jsonify({'error': 'Email and password are required'}), 400
-    
-    if email in users and check_password_hash(users[email], password):
-        session['user_email'] = email
-        return jsonify({'message': 'Login successful!'}), 200
-    else:
-        return jsonify({'error': 'Invalid email or password'}), 401
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
+        
+        if not email or not password:
+            return jsonify({'error': 'Email and password are required'}), 400
+        
+        if email in users and check_password_hash(users[email], password):
+            session['user_email'] = email
+            return jsonify({'message': 'Login successful!'}), 200
+        else:
+            return jsonify({'error': 'Invalid email or password'}), 401
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/dashboard')
 def dashboard():
-    if 'user_email' not in session:
-        return redirect(url_for('index'))
-    return render_template('dashboard.html', email=session['user_email'])
+    try:
+        if 'user_email' not in session:
+            return redirect(url_for('index'))
+        return render_template('dashboard.html', email=session['user_email'])
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
 @app.route('/logout')
 def logout():
-    session.pop('user_email', None)
-    return redirect(url_for('index'))
+    try:
+        session.pop('user_email', None)
+        return redirect(url_for('index'))
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
-app = app
-
-"""
-if __name__ == '__main__':
-    print("Server starting...")
-    print("Demo credentials:")
-    print("  Email: user@example.com")
-    print("  Password: password123")
-    app.run(debug=True, host='0.0.0.0', port=5000)
-"""
+# This is the critical part for Vercel
+# Export the app as the handler
+handler = app
