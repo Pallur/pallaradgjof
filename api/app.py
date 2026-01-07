@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
 # In-memory user database
 users = {
@@ -42,9 +42,13 @@ def logout():
     session.pop('user_email', None)
     return redirect(url_for('index'))
 
+app = app
+
+"""
 if __name__ == '__main__':
     print("Server starting...")
     print("Demo credentials:")
     print("  Email: user@example.com")
     print("  Password: password123")
     app.run(debug=True, host='0.0.0.0', port=5000)
+"""
